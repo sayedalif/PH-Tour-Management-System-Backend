@@ -1,8 +1,11 @@
-import { NextFunction, Request, Response } from "express";
-import AppError from "../errorHelpers/AppError";
-import { verifyToken } from "../utils/jwt";
-import { envVars } from "../config/env";
-import { JwtPayload } from "jsonwebtoken";
+import { NextFunction, Request, Response } from 'express';
+import AppError from '../errorHelpers/AppError';
+import { verifyToken } from '../utils/jwt';
+import { envVars } from '../config/env';
+import { JwtPayload } from 'jsonwebtoken';
+import { User } from '../modules/user/user.model';
+import { StatusCodes } from 'http-status-codes';
+import { IsActive } from '../modules/user/user.interface';
 // import { Role } from "../modules/user/user.interface";
 
 export const checkAuth =
@@ -25,11 +28,30 @@ export const checkAuth =
         envVars.JWT_ACCESS_SECRET
       ) as JwtPayload;
 
-      if (!authRoles.includes(verifiedToken.role)) {
+      const isUserExists = await User.findOne({
+        email: verifiedToken.email,
+      });
+
+      if (!isUserExists) {
+        throw new AppError(StatusCodes.BAD_REQUEST, 'User does not exist');
+      }
+
+      if (
+        isUserExists.isActive === IsActive.BLOCKED ||
+        isUserExists.isActive === IsActive.INACTIVE
+      ) {
         throw new AppError(
-          403,
-          'Forbidden access, only admins can access this route'
+          StatusCodes.BAD_REQUEST,
+          `User is ${isUserExists.isActive}`
         );
+      }
+
+      if (isUserExists.isDeleted) {
+        throw new AppError(StatusCodes.BAD_REQUEST, 'User is deleted');
+      }
+
+      if (!authRoles.includes(verifiedToken.role)) {
+        throw new AppError(403, 'You are not permitted to view this route!!!');
       }
 
       req.user = verifiedToken;
