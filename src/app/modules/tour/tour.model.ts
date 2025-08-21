@@ -44,4 +44,4 @@ const tourSchema = new Schema<ITour>(
   }
 );
 
-const Tour = mongoose.model('Tour', tourSchema);
+export const Tour = mongoose.model('Tour', tourSchema);
