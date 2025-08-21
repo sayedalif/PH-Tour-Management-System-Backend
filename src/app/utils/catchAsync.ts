@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from 'express';
 
 type AsyncHandler = (
@@ -8,5 +9,7 @@ type AsyncHandler = (
 
 export const catchAsync =
   (fn: AsyncHandler) => (req: Request, res: Response, next: NextFunction) => {
-    return Promise.resolve(fn(req, res, next)).catch(next);
+    return Promise.resolve(fn(req, res, next)).catch((err: any) => {
+      next(err);
+    });
   };

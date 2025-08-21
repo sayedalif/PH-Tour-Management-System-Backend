@@ -7,6 +7,52 @@ import {
 import { envVars } from './env';
 import { User } from '../modules/user/user.model';
 import { Role } from '../modules/user/user.interface';
+import { Strategy as LocalStrategy } from 'passport-local';
+import bcryptjs from 'bcryptjs';
+
+passport.use(
+  new LocalStrategy(
+    {
+      usernameField: 'email',
+      passwordField: 'password',
+    },
+    async (email: string, password: string, done) => {
+      try {
+        const isUserExists = await User.findOne({ email });
+
+        if (!isUserExists) {
+          return done(null, false, { message: 'User Does Not Exists' });
+        }
+
+        const isGoogleAuthenticated = isUserExists.auths.some(
+          providerObj => providerObj.provider === 'google'
+        );
+
+        if (isGoogleAuthenticated && !isUserExists.password) {
+          return done(null, false, {
+            message:
+              'You have authenticated through Google. So if you want to login with credentials, then at first login with google and set a password for your Gmail and then you can login with email and password.',
+          });
+        }
+
+        const isPasswordMatch = await bcryptjs.compare(
+          password as string,
+          isUserExists.password as string
+        );
+
+        if (!isPasswordMatch) {
+          return done(null, false, { message: 'Password Does Not Match' });
+        }
+
+        return done(null, isUserExists);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+        done(error);
+      }
+    }
+  )
+);
 
 passport.use(
   new GoogleStrategy(
@@ -45,6 +91,7 @@ passport.use(
 
         return done(null, user);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Google Strategy Error', error);
         return done(error);
       }
@@ -58,11 +105,11 @@ passport.serializeUser((user: any, done: (err: any, id?: unknown) => void) => {
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-passport.deserializeUser(async(id:string,done:any)=>{
+passport.deserializeUser(async (id: string, done: any) => {
   try {
     const user = await User.findById(id);
-    done(null,user);
+    done(null, user);
   } catch (error) {
-    done(error)
+    done(error);
   }
 });

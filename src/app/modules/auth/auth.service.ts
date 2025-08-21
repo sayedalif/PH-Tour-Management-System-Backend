@@ -8,35 +8,35 @@ import { createNewAccessTokenWithRefreshToken } from './../../utils/userTokens';
 import { JwtPayload } from 'jsonwebtoken';
 import { envVars } from '../../config/env';
 
-const credentialsLogin = async (payload: Partial<IUser>) => {
-  const { email, password } = payload;
+// const credentialsLogin = async (payload: Partial<IUser>) => {
+//   const { email, password } = payload;
 
-  const isUserExists = await User.findOne({ email });
+//   const isUserExists = await User.findOne({ email });
 
-  if (!isUserExists) {
-    throw new AppError(StatusCodes.BAD_REQUEST, 'User does not exist');
-  }
+//   if (!isUserExists) {
+//     throw new AppError(StatusCodes.BAD_REQUEST, 'User does not exist');
+//   }
 
-  const isPasswordMatch = await bcryptjs.compare(
-    password as string,
-    isUserExists.password as string
-  );
+//   const isPasswordMatch = await bcryptjs.compare(
+//     password as string,
+//     isUserExists.password as string
+//   );
 
-  if (!isPasswordMatch) {
-    throw new AppError(StatusCodes.UNAUTHORIZED, 'Password is incorrect');
-  }
+//   if (!isPasswordMatch) {
+//     throw new AppError(StatusCodes.UNAUTHORIZED, 'Password is incorrect');
+//   }
 
-  const userTokens = await createUserTokens(isUserExists);
+//   const userTokens = await createUserTokens(isUserExists);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password: pass, ...rest } = isUserExists.toObject();
+//   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+//   const { password: pass, ...rest } = isUserExists.toObject();
 
-  return {
-    accessToken: userTokens.accessToken,
-    refreshToken: userTokens.refreshToken,
-    user: rest,
-  };
-};
+//   return {
+//     accessToken: userTokens.accessToken,
+//     refreshToken: userTokens.refreshToken,
+//     user: rest,
+//   };
+// };
 
 const getNewAccessToken = async (refreshToken: string) => {
   const newAccessToken = await createNewAccessTokenWithRefreshToken(
@@ -81,7 +81,7 @@ const resetPassword = async (
 // user - login - token (email, role, _id) - booking / payment / booking / payment cancel - token
 
 export const authServices = {
-  credentialsLogin,
+  // credentialsLogin,
   getNewAccessToken,
   resetPassword,
 };
