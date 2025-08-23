@@ -36,6 +36,9 @@ const getAllDivisions = async () => {
 
 const getSingleDivision = async (slug: string) => {
   const division = await Division.findOne({ slug });
+  if (!division) {
+    throw new Error('No Division Found With This Slug');
+  }
   return {
     data: division,
   };
@@ -77,8 +80,8 @@ const updateDivision = async (id: string, payload: Partial<IDivision>) => {
 };
 
 const deleteDivision = async (id: string) => {
-    await Division.findByIdAndDelete(id);
-    return null;
+  await Division.findByIdAndDelete(id);
+  return null;
 };
 
 export const DivisionService = {
